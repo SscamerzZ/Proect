@@ -1,0 +1,205 @@
+CREATE TABLE Employees (
+    EmployeeID INT PRIMARY KEY,
+    FirstName VARCHAR(50),
+    LastName VARCHAR(50),
+    Position VARCHAR(100),
+    Salary DECIMAL(10, 2),
+    Department VARCHAR(100)
+);
+
+INSERT INTO Employees (EmployeeID, FirstName, LastName, Position, Salary, Department)
+VALUES 
+    (1, 'Иван', 'Иванов', 'Менеджер по кредитам', 50000.00, 'Отдел кредитования'),
+    (2, 'Петр', 'Петров', 'Банковский кассир', 35000.00, 'Касса'),
+    (3, 'Мария', 'Сидорова', 'Финансовый аналитик', 60000.00, 'Финансовый отдел');
+
+CREATE TABLE Clients (
+    ClientID INT PRIMARY KEY,
+    FirstName VARCHAR(50),
+    LastName VARCHAR(50),
+    Email VARCHAR(100),
+    Phone VARCHAR(20),
+    Address VARCHAR(255)
+);
+
+INSERT INTO Clients (ClientID, FirstName, LastName, Email, Phone, Address)
+VALUES 
+    (101, 'Анна', 'Кузнецова', 'anna@example.com', '123-456-7890', 'ул. Ленина, 123'),
+    (102, 'Дмитрий', 'Смирнов', 'dmitry@example.com', '456-789-0123', 'пр. Победы, 45'),
+    (103, 'Елена', 'Николаева', 'elena@example.com', '789-012-3456', 'ул. Советская, 67');
+
+CREATE TABLE Accounts (
+    AccountID INT PRIMARY KEY,
+    ClientID INT,
+    AccountType VARCHAR(50),
+    Balance DECIMAL(10, 2),
+    FOREIGN KEY (ClientID) REFERENCES Clients(ClientID)
+);
+
+INSERT INTO Accounts (AccountID, ClientID, AccountType, Balance)
+VALUES 
+    (201, 101, 'Сберегательный', 50000.00),
+    (202, 102, 'Текущий', 10000.00),
+    (203, 103, 'Кредитный', -1500.00);
+
+CREATE TABLE Transactions (
+    TransactionID INT PRIMARY KEY,
+    AccountID INT,
+    Amount DECIMAL(10, 2),
+    TransactionType VARCHAR(50),
+    TransactionDate DATE,
+    FOREIGN KEY (AccountID) REFERENCES Accounts(AccountID)
+);
+
+
+INSERT INTO Transactions (TransactionID, AccountID, Amount, TransactionType, TransactionDate)
+VALUES 
+    (301, 201, 1000.00, 'Пополнение', '2024-02-14'),
+    (302, 202, -500.00, 'Списание', '2024-02-14'),
+    (303, 203, 200.00, 'Погашение кредита', '2024-02-14');
+
+CREATE TABLE EmployeeLogins (
+    EmployeeID INT PRIMARY KEY,
+    Username VARCHAR(50) UNIQUE,
+    Password VARCHAR(255)
+);
+
+INSERT INTO EmployeeLogins (EmployeeID, Username, Password)
+VALUES 
+    (1, 'ivanov', 'password1'),
+    (2, 'petrov', 'password2'),
+    (3, 'sidorova', 'password3');
+
+CREATE TABLE ClientLogins (
+    ClientID INT PRIMARY KEY,
+    Username VARCHAR(50) UNIQUE,
+    Password VARCHAR(255)
+);
+
+INSERT INTO ClientLogins (ClientID, Username, Password)
+VALUES 
+    (101, 'annak', 'clientpass1'),
+    (102, 'dmitrys', 'clientpass2'),
+    (103, 'elenan', 'clientpass3');
+
+CREATE TABLE Loans (
+    LoanID INT PRIMARY KEY,
+    ClientID INT,
+    LoanAmount DECIMAL(10, 2),
+    InterestRate DECIMAL(5, 2),
+    LoanTermMonths INT,
+    FOREIGN KEY (ClientID) REFERENCES Clients(ClientID)
+);
+
+INSERT INTO Loans (LoanID, ClientID, LoanAmount, InterestRate, LoanTermMonths)
+VALUES 
+    (401, 101, 10000.00, 8.5, 24),
+    (402, 102, 20000.00, 7.25, 36),
+    (403, 103, 5000.00, 9.0, 12);
+
+CREATE TABLE LoanPayments (
+    PaymentID INT PRIMARY KEY,
+    LoanID INT,
+    PaymentAmount DECIMAL(10, 2),
+    PaymentDate DATE,
+    FOREIGN KEY (LoanID) REFERENCES Loans(LoanID)
+);
+
+INSERT INTO LoanPayments (PaymentID, LoanID, PaymentAmount, PaymentDate)
+VALUES 
+    (501, 401, 500.00, '2024-02-14'),
+    (502, 402, 750.00, '2024-02-14'),
+    (503, 403, 300.00, '2024-02-14');
+
+CREATE TABLE Deposits (
+    DepositID INT PRIMARY KEY,
+    ClientID INT,
+    DepositAmount DECIMAL(10, 2),
+    InterestRate DECIMAL(5, 2),
+    DepositTermMonths INT,
+    FOREIGN KEY (ClientID) REFERENCES Clients(ClientID)
+);
+
+INSERT INTO Deposits (DepositID, ClientID, DepositAmount, InterestRate, DepositTermMonths)
+VALUES 
+    (601, 101, 20000.00, 5.0, 12),
+    (602, 102, 30000.00, 6.0, 18),
+    (603, 103, 15000.00, 4.5, 24);
+
+CREATE TABLE DepositPayments (
+    PaymentID INT PRIMARY KEY,
+    DepositID INT,
+    PaymentAmount DECIMAL(10, 2),
+    PaymentDate DATE,
+    FOREIGN KEY (DepositID) REFERENCES Deposits(DepositID)
+);
+
+INSERT INTO DepositPayments (PaymentID, DepositID, PaymentAmount, PaymentDate)
+VALUES 
+    (701, 601, 200.00, '2024-02-14'),
+    (702, 602, 500.00, '2024-02-14'),
+    (703, 603, 100.00, '2024-02-14');
+
+//процедуры
+DELIMITER //
+CREATE PROCEDURE AddEmployee (
+    IN p_FirstName VARCHAR(50),
+    IN p_LastName VARCHAR(50),
+    IN p_Position VARCHAR(100),
+    IN p_Salary DECIMAL(10, 2),
+    IN p_Department VARCHAR(100)
+)
+BEGIN
+    INSERT INTO Employees (FirstName, LastName, Position, Salary, Department)
+    VALUES (p_FirstName, p_LastName, p_Position, p_Salary, p_Department);
+END //
+DELIMITER ;
+
+//процедуры
+DELIMITER //
+CREATE PROCEDURE AddClient (
+    IN p_FirstName VARCHAR(50),
+    IN p_LastName VARCHAR(50),
+    IN p_Email VARCHAR(100),
+    IN p_Phone VARCHAR(20),
+    IN p_Address VARCHAR(255)
+)
+BEGIN
+    INSERT INTO Clients (FirstName, LastName, Email, Phone, Address)
+    VALUES (p_FirstName, p_LastName, p_Email, p_Phone, p_Address);
+END //
+DELIMITER ;
+
+//процедуры
+DELIMITER //
+CREATE PROCEDURE AddAccount (
+    IN p_ClientID INT,
+    IN p_AccountType VARCHAR(50),
+    IN p_Balance DECIMAL(10, 2)
+)
+BEGIN
+    INSERT INTO Accounts (ClientID, AccountType, Balance)
+    VALUES (p_ClientID, p_AccountType, p_Balance);
+END //
+DELIMITER ;
+
+//процедуры
+DELIMITER //
+CREATE PROCEDURE AddTransaction (
+    IN p_AccountID INT,
+    IN p_Amount DECIMAL(10, 2),
+    IN p_TransactionType VARCHAR(50),
+    IN p_TransactionDate DATE
+)
+BEGIN
+    INSERT INTO Transactions (AccountID, Amount, TransactionType, TransactionDate)
+    VALUES (p_AccountID, p_Amount, p_TransactionType, p_TransactionDate);
+END //
+DELIMITER ;
+
+//вызовы процедур
+CALL AddEmployee('Иван', 'Иванов', 'Менеджер', 50000.00, 'Отдел продаж');
+CALL AddClient('Анна', 'Петрова', 'anna@example.com', '1234567890', 'ул. Ленина, 10');
+CALL AddAccount(1, 'Текущий', 10000.00);
+CALL AddTransaction(1, 1000.00, 'Пополнение', '2024-02-14');
+
